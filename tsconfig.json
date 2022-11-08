@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "strict": true,
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "Node",
+    "incremental": true,
+    "stripInternal": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "tsBuildInfoFile": ".tsbuildinfo"
+  }
+}
