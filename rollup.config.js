@@ -45,7 +45,7 @@ export default {
   plugins: [
     awesomeTypescript({
       declarations: "lib",
-      compilerOptions: { target: "ES6", module: "ESNext" }
+      compilerOptions: { target: "ES3", module: "ESNext" }
     })
   ]
 };

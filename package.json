@@ -37,5 +37,25 @@
     "tslib": "^2.4.0",
     "typescript": "^4.8.4"
   },
-  "keywords": []
+  "keywords": [
+    "addEventListener",
+    "addListener",
+    "dispatch",
+    "dispatcher",
+    "emit",
+    "emitter",
+    "EventEmitter",
+    "events",
+    "observer",
+    "on",
+    "once",
+    "off",
+    "promise",
+    "publish",
+    "pubsub",
+    "subscribe",
+    "unsubscribe",
+    "typesafe",
+    "TypeScript"
+  ]
 }

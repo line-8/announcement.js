@@ -4,11 +4,8 @@ type Topic<C extends Catalog> = Extract<keyof C, string | symbol>;
 
 // prettier-ignore
 type Data<C extends Catalog, T extends Topic<C>> =
-  // `any` → expect zero arguments or one argument of any type
   0 extends 1 & C[T] ? [data?: any] :
-  // `void` → expect zero arguments or one argument of the specified union type
   void extends C[T] ? (C[T] extends void ? [] : [data?: Exclude<C[T], void>]) :
-  // default → expect an argument of the specified type
   [data: C[T]];
 
 export type Handler<C extends Catalog, T extends Topic<C>> = (...data: Data<C, T>) => void;
@@ -21,15 +18,10 @@ export interface Once<C extends Catalog, T extends Topic<C>> extends Promise<Dat
   cancel(): boolean;
 }
 
-enum Status {
-  Idle,
-  Active,
-  Dead
-}
-
 interface Tracker<C extends Catalog> {
   topic: Topic<C>;
-  status: Status;
+  cycle: number;
+  alive: boolean;
   process(data?: any): void;
   kill?(): void;
 }
@@ -38,40 +30,42 @@ const Channels: any = function () {};
 Channels.prototype = Object.create(null);
 
 export class Announcement<C extends Catalog> {
-  private channels: { [T in Topic<C>]?: Set<Tracker<C>> } = new Channels();
-  private processing: boolean = false;
+  private channels: { [T in Topic<C>]?: Tracker<C> | Tracker<C>[] } = new Channels();
+  private cycle: number = 0;
 
   private add(tracker: Tracker<C>) {
     let channel = this.channels[tracker.topic];
-    if (!channel) channel = this.channels[tracker.topic] = new Set();
-    channel.add(tracker);
+    if (!channel) this.channels[tracker.topic] = tracker;
+    else if (Array.isArray(channel)) channel.push(tracker);
+    else this.channels[tracker.topic] = [channel, tracker];
   }
 
   private remove(tracker: Tracker<C>) {
-    let channel = this.channels[tracker.topic]!;
-    if (channel.size === 1) delete this.channels[tracker.topic];
-    else channel.delete(tracker);
+    let channel = this.channels[tracker.topic];
+    if (!Array.isArray(channel)) delete this.channels[tracker.topic];
+    else if (channel.length === 2) this.channels[tracker.topic] = channel[channel[0] === tracker ? 1 : 0];
+    else channel.splice(channel.indexOf(tracker), 1);
   }
 
   private dispose(tracker: Tracker<C>) {
-    if (tracker.status === Status.Dead) return false;
+    if (!tracker.alive) return false;
     this.remove(tracker);
     this.kill(tracker);
     return true;
   }
 
   private kill(tracker: Tracker<C>) {
-    tracker.status = Status.Dead;
+    tracker.alive = false;
     tracker.kill?.();
   }
 
   public on<T extends Topic<C>>(topic: T, handler: Handler<C, T>): Listener {
     let tracker: Tracker<C> = {
       topic,
-      status: this.processing ? Status.Idle : Status.Active,
+      alive: true,
+      cycle: this.cycle,
       process: handler
     };
-
     this.add(tracker);
     return { dispose: () => this.dispose(tracker) };
   }
@@ -81,10 +75,11 @@ export class Announcement<C extends Catalog> {
 
     let tracker: Tracker<C> = {
       topic,
-      status: this.processing ? Status.Idle : Status.Active,
+      alive: true,
+      cycle: this.cycle,
       process: data => {
         this.remove(tracker);
-        tracker.status = Status.Dead;
+        tracker.alive = false;
         resolve(data);
       },
       kill: () => reject()
@@ -105,19 +100,23 @@ export class Announcement<C extends Catalog> {
   public emit(topic: Topic<C>, data?: any) {
     let channel = this.channels[topic];
     if (!channel) return false;
-    this.processing = true;
+    this.cycle++;
 
-    for (let tracker of channel) {
-      if (tracker.status === Status.Active) tracker.process(data);
-      else if (tracker.status === Status.Idle) tracker.status = Status.Active;
+    if (!Array.isArray(channel)) channel.process(data);
+    else {
+      let tracker: Tracker<C>;
+      for (let i = 0, l = channel.length; i < l && (tracker = channel[i]); i++) {
+        if (tracker.alive && tracker.cycle < this.cycle) tracker.process(data);
+      }
     }
-
-    this.processing = false;
     return true;
   }
 
   public count(topic: Topic<C>) {
-    return this.channels[topic]?.size || 0;
+    let channel = this.channels[topic];
+    if (!channel) return 0;
+    else if (!Array.isArray(channel)) return 1;
+    else return channel.length;
   }
 
   public clear(topic: Topic<C>) {
@@ -125,7 +124,8 @@ export class Announcement<C extends Catalog> {
     if (!channel) return false;
     delete this.channels[topic];
 
-    for (let tracker of channel) this.kill(tracker);
+    if (!Array.isArray(channel)) this.kill(channel);
+    else for (let tracker of channel) this.kill(tracker);
     return true;
   }
 }
