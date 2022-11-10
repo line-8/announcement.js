@@ -9,14 +9,14 @@ interface Test {
 const counts = [1, 2, 5, 10, 100, 1000];
 
 const tests: Test[] = [
-  // {
-  //   name: "emit",
-  //   function: count => {
-  //     let announcement = new Announcement();
-  //     for (let i = 0; i < count; i++) announcement.on("foo", () => {});
-  //     return () => announcement.emit("foo");
-  //   }
-  // },
+  {
+    name: "emit",
+    function: count => {
+      let announcement = new Announcement();
+      for (let i = 0; i < count; i++) announcement.on("foo", () => {});
+      return () => announcement.emit("foo");
+    }
+  },
   {
     name: "listener",
     function: count => {

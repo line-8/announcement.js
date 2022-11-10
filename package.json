@@ -1,6 +1,7 @@
 {
   "name": "announcement.js",
-  "version": "0.4.0",
+  "description": "Modern, high-performance event emitter",
+  "version": "1.0.0",
   "author": "Yanis Morgenegg",
   "license": "MIT",
   "homepage": "https://github.com/line-8/announcement.js",

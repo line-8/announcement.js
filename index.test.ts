@@ -47,11 +47,11 @@ test("emit", () => {
 });
 
 test("listener", () => {
-  let emit = () => {
+  let i = 0,
+    emit = () => {
       console.log(announcement["channels"]["number"]);
       return announcement.emit("number", ++i);
-    },
-    i = 0;
+    };
 
   let handler1 = jest.fn(),
     handler2 = jest.fn(),
