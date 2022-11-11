@@ -166,10 +166,8 @@ export class Announcement<C extends Catalog> {
     if (!Array.isArray(channel)) channel.process(data);
     // multiple trackers → iterate and check
     else {
-      let tracker: Tracker<C>;
-      // always check if the current tracker exists, since it could have been
-      // removed during emission
-      for (let i = 0, l = channel.length; i < l && (tracker = channel[i]); i++) {
+      for (let i = 0; i < channel.length; i++) {
+        let tracker = channel[i];
         // only process trackers that were added before emission
         if (tracker.alive && tracker.cycle < this.cycle) tracker.process(data);
       }

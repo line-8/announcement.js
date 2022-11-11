@@ -48,10 +48,7 @@ test("emit", () => {
 
 test("listener", () => {
   let i = 0,
-    emit = () => {
-      console.log(announcement["channels"]["number"]);
-      return announcement.emit("number", ++i);
-    };
+    emit = () => announcement.emit("number", ++i);
 
   let handler1 = jest.fn(),
     handler2 = jest.fn(),

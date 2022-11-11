@@ -1,12 +1,12 @@
 import { Event, Suite } from "benchmark";
-import { Announcement, Listener } from "./lib";
+import { Announcement, Listener } from "./index";
 
 interface Test {
   name: string;
   function: (count: number) => VoidFunction;
 }
 
-const counts = [1, 2, 5, 10, 100, 1000];
+const counts = [1, 2, 5, 10, 100, 1000, 10000, 100000];
 
 const tests: Test[] = [
   {
