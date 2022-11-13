@@ -96,115 +96,119 @@ emitter.on("🚏", data => console.log(`The next station is ${data.name}`));
 
 ## API
 
-### `Announcement`
+### Classes
+
+#### `Announcement`
 
 A class that is responsible for transmitting events.
 
 It has the following instance methods:
 
-#### `on`
+- **`on`**
 
-**Parameters**:  
-&nbsp; topic: `string` | `symbol`  
-&nbsp; handler: `Function`
+  **Parameters**:  
+  &ensp; topic: `string` | `symbol`  
+  &ensp; handler: `Function`
 
-**Returns**: [`Listener`](#listener)
+  **Returns**: [`Listener`](#listener)
 
-Creates a new listener that waits for events of the specified topic to occur,
-intercepts them, and invokes the given handler function.If the event holds
-additional data, it will be provided as an argument when the handler function is
-called.
+  Creates a new listener that waits for events of the specified topic to occur,
+  intercepts them, and invokes the given handler function. If the event holds
+  additional data, it will be provided as an argument when the handler function is
+  called.
 
-#### `once`
+- **`once`**
 
-**Parameters**:  
-&nbsp; topic: `string` | `symbol`
+  **Parameters**:  
+  &ensp; topic: `string` | `symbol`
 
-**Returns**: [`Once`](#once)
+  **Returns**: [`Once`](#once)
 
-Creates a one-time listener in the form of a promise, which is resolved as soon
-as an event of the specified topic occurs. If the event holds additional data,
-it is provided as the resolved value.
+  Creates a one-time listener in the form of a promise, which is resolved as soon
+  as an event of the specified topic occurs. If the event holds additional data,
+  it is provided as the resolved value.
 
-#### `emit`
+- **`emit`**
 
-**Parameters**:  
-&nbsp; topic: `string` | `symbol`  
-&nbsp; data?: `any`
+  **Parameters**:  
+  &ensp; topic: `string` | `symbol`  
+  &ensp; data?: `any`
 
-**Returns**: `boolean`
+  **Returns**: `boolean`
 
-Triggers a new event for the specified topic, optionally with some data,
-notifying its subscribers.
+  Triggers a new event for the specified topic, optionally with some data,
+  notifying its subscribers.
 
-The return value indicates whether there were active subscriptions for the
-specified topic.
+  The return value indicates whether there were active subscriptions for the
+  specified topic.
 
-#### `count`
+- **`count`**
 
-**Parameters**:  
-&nbsp; topic: `string` | `symbol`
+  **Parameters**:  
+  &ensp; topic: `string` | `symbol`
 
-**Returns**: `boolean`
+  **Returns**: `boolean`
 
-Returns the number of active subscriptions for the specified topic.
+  Returns the number of active subscriptions for the specified topic.
 
-#### `clear`
+- **`clear`**
 
-**Parameters**:  
-&nbsp; topic: `string` | `symbol`
+  **Parameters**:  
+  &ensp; topic: `string` | `symbol`
 
-**Returns**: `boolean`
+  **Returns**: `boolean`
 
-Removes all subscriptions for the specified topic.
+  Removes all subscriptions for the specified topic.
 
-The return value indicates whether there were active subscriptions for the
-specified topic.
+  The return value indicates whether there were active subscriptions for the
+  specified topic.
 
-### `Listener`
+### Structures
+
+#### `Listener`
 
 An object that waits for events of a given topic to occur, intercepts them, and
 notifies its subscriber by calling a predefined handler function. If the event
 holds additional data, it will be provided as an argument when the handler
 function is called.
 
-It has the following instance methods:
+It has the following methods:
 
-#### `cancel`
+- **`cancel`**
 
-**Parameters**: ✗  
-**Returns**: `boolean`
+  **Parameters**: ✗  
+  **Returns**: `boolean`
 
-Disposes the listener by canceling the corresponding subscription and removing
-the associated resources from the emitter. Subsequent method calls will have no
-effect.
+  Disposes the listener by canceling the corresponding subscription and removing
+  the associated resources from the emitter. Subsequent method calls will have no
+  effect.
 
-Call this method whenever a listener is no longer used in your application in
-order to prevent memory leaks. To completely free it from memory, remove all
-references to it.
+  Call this method whenever a listener is no longer used in your application in
+  order to prevent memory leaks. To completely free it from memory, remove all
+  references to it.
 
-The return value indicates whether the state of the listener was affected by the
-method call.
+  The return value indicates whether the state of the listener was affected by the
+  method call.
 
-### `Once`
+#### `Once`
 
 A promise that is resolved as soon as an event related to a specific topic
 occurs. If the event holds additional data, it is provided as the resolved
 value.
 
-All [instance methods](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise#instance_methods)
+All [methods](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise#instance_methods)
 of the built-in promise object can be used, with the addition of the following:
 
-#### `cancel`
+- **`cancel`**
 
-**Parameters**: ✗  
-**Returns**: `boolean`
+  **Parameters**: ✗  
+  **Returns**: `boolean`
 
-Cancels the promise by immediately rejecting it and removing the associated
-resources from the emitter. Subsequent method calls will have no effect.
+  Cancels the promise by immediately rejecting it and removing the associated
+  resources from the emitter. Subsequent method calls will have no effect.
 
-The return value indicates whether the state of the promise was affected by the
-method call.
+  The return value indicates whether the state of the promise was affected by the
+  method call.
 
 ## FAQ
 
