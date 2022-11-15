@@ -66,37 +66,37 @@ Channels.prototype = Object.create(null);
  * A class that is responsible for transmitting events.
  */
 export class Announcement<C extends Catalog> {
-  private channels: { [T in Topic<C>]?: Tracker<C> | Tracker<C>[] } = new Channels();
-  private cycle: number = 0;
+  private _channels: { [T in Topic<C>]?: Tracker<C> | Tracker<C>[] } = new Channels();
+  private _cycle: number = 0;
 
-  private add(tracker: Tracker<C>) {
-    let channel = this.channels[tracker.topic];
+  private _add(tracker: Tracker<C>) {
+    let channel = this._channels[tracker.topic];
     // no existing channel → store tracker as channel
-    if (!channel) this.channels[tracker.topic] = tracker;
+    if (!channel) this._channels[tracker.topic] = tracker;
     // channel is an array of trackers → push tracker into array
     else if (Array.isArray(channel)) channel.push(tracker);
     // channel is a single tracker → upgrade to array
-    else this.channels[tracker.topic] = [channel, tracker];
+    else this._channels[tracker.topic] = [channel, tracker];
   }
 
-  private remove(tracker: Tracker<C>) {
-    let channel = this.channels[tracker.topic];
+  private _remove(tracker: Tracker<C>) {
+    let channel = this._channels[tracker.topic];
     // channel is a single tracker → delete channel
-    if (!Array.isArray(channel)) delete this.channels[tracker.topic];
+    if (!Array.isArray(channel)) delete this._channels[tracker.topic];
     // channel has two trackers → downgrade from array
-    else if (channel.length === 2) this.channels[tracker.topic] = channel[channel[0] === tracker ? 1 : 0];
+    else if (channel.length === 2) this._channels[tracker.topic] = channel[channel[0] === tracker ? 1 : 0];
     // channel has many trackers → splice tracker from array
     else channel.splice(channel.indexOf(tracker), 1);
   }
 
-  private dispose(tracker: Tracker<C>) {
+  private _dispose(tracker: Tracker<C>) {
     if (!tracker.alive) return false;
-    this.remove(tracker);
-    this.kill(tracker);
+    this._remove(tracker);
+    this._kill(tracker);
     return true;
   }
 
-  private kill(tracker: Tracker<C>) {
+  private _kill(tracker: Tracker<C>) {
     tracker.alive = false;
     tracker.kill?.();
   }
@@ -111,11 +111,11 @@ export class Announcement<C extends Catalog> {
     let tracker: Tracker<C> = {
       topic,
       alive: true,
-      cycle: this.cycle,
+      cycle: this._cycle,
       process: handler
     };
-    this.add(tracker);
-    return { dispose: () => this.dispose(tracker) };
+    this._add(tracker);
+    return { dispose: () => this._dispose(tracker) };
   }
 
   /**
@@ -129,22 +129,22 @@ export class Announcement<C extends Catalog> {
     let tracker: Tracker<C> = {
       topic,
       alive: true,
-      cycle: this.cycle,
+      cycle: this._cycle,
       process: data => {
-        this.remove(tracker);
+        this._remove(tracker);
         tracker.alive = false;
         resolve(data);
       },
       kill: () => reject()
     };
-    this.add(tracker);
+    this._add(tracker);
 
     let promise = new Promise((res, rej) => {
       resolve = res;
       reject = rej;
     }) as Once<C, T>;
 
-    promise.cancel = () => this.dispose(tracker);
+    promise.cancel = () => this._dispose(tracker);
     return promise;
   }
 
@@ -158,9 +158,9 @@ export class Announcement<C extends Catalog> {
   public emit<T extends Topic<C>>(topic: T, ...data: Data<C, T>): boolean;
   /** @internal */
   public emit(topic: Topic<C>, data?: any) {
-    let channel = this.channels[topic];
+    let channel = this._channels[topic];
     if (!channel) return false;
-    this.cycle++;
+    this._cycle++;
 
     // single tracker → process directly
     if (!Array.isArray(channel)) channel.process(data);
@@ -169,7 +169,7 @@ export class Announcement<C extends Catalog> {
       for (let i = 0; i < channel.length; i++) {
         let tracker = channel[i];
         // only process trackers that were added before emission
-        if (tracker.alive && tracker.cycle < this.cycle) tracker.process(data);
+        if (tracker.alive && tracker.cycle < this._cycle) tracker.process(data);
       }
     }
     return true;
@@ -179,7 +179,7 @@ export class Announcement<C extends Catalog> {
    * Returns the number of active subscriptions for the specified topic.
    */
   public count(topic: Topic<C>) {
-    let channel = this.channels[topic];
+    let channel = this._channels[topic];
     if (!channel) return 0;
     else if (!Array.isArray(channel)) return 1;
     else return channel.length;
@@ -192,12 +192,12 @@ export class Announcement<C extends Catalog> {
    * specified topic
    */
   public clear(topic: Topic<C>) {
-    let channel = this.channels[topic];
+    let channel = this._channels[topic];
     if (!channel) return false;
-    delete this.channels[topic];
+    delete this._channels[topic];
 
-    if (!Array.isArray(channel)) this.kill(channel);
-    else for (let tracker of channel) this.kill(tracker);
+    if (!Array.isArray(channel)) this._kill(channel);
+    else for (let tracker of channel) this._kill(tracker);
     return true;
   }
 }
